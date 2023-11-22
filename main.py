@@ -85,6 +85,8 @@ async def link_user(
 ) -> None:
     main_to_sub[str(main.id)] = main_to_sub.get(str(main.id), []) + [str(sub.id)]
     sub_to_main[str(sub.id)] = main.id
+    if str(main.id) in punishment:
+        await remove_manage_roles(sub)
     await ctx.respond(f"{main.mention} is now linked to {sub.mention}!", ephemeral=True)
 
 
