@@ -37,7 +37,6 @@ class FileDict(dict):
             json.dump(self, f)
 
 
-main_to_sub = FileDict("data/main-to-sub.json")
 sub_to_main = FileDict("data/sub-to-main.json")
 punishment = FileDict("data/punishment.json")
 
@@ -83,7 +82,12 @@ async def on_member_update(before: discord.Member, after: discord.Member) -> Non
 async def link_user(
     ctx: discord.ApplicationContext, main: discord.Member, sub: discord.Member
 ) -> None:
-    main_to_sub[str(main.id)] = main_to_sub.get(str(main.id), []) + [str(sub.id)]
+    if str(main.id) in sub_to_main:
+        await ctx.respond(
+            f"{main.mention} is already linked to {sub_to_main[str(main.id)]}!",
+            ephemeral=True,
+        )
+        return
     sub_to_main[str(sub.id)] = main.id
     if str(main.id) in punishment:
         await remove_manage_roles(sub)
@@ -98,7 +102,6 @@ async def link_user(
 async def unlink_user(
     ctx: discord.ApplicationContext, main: discord.Member, sub: discord.Member
 ) -> None:
-    main_to_sub[str(main.id)].remove(str(sub.id))
     del sub_to_main[str(sub.id)]
     await ctx.respond(
         f"{main.mention} is now unlinked from {sub.mention}!", ephemeral=True
