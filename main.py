@@ -74,6 +74,11 @@ async def on_member_update(before: discord.Member, after: discord.Member) -> Non
             del punishment[str(main.id)]
 
 
+@bot.event
+async def on_guild_role_update(before: discord.Role, after: discord.Role) -> None:
+    await check()
+
+
 @bot.slash_command(
     name="link-user",
     default_member_permissions=admin_only,
