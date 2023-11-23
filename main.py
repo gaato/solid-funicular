@@ -40,7 +40,7 @@ class FileDict(dict):
             json.dump(self, f)
 
 
-sub_to_main = FileDict("data/sub-to-main.json")
+users = FileDict("data/users.json")
 punishment = FileDict("data/punishment.json")
 
 
@@ -68,9 +68,19 @@ async def on_ready() -> None:
 
 
 @bot.event
+async def on_member_join(member: discord.Member) -> None:
+    if str(member.id) in users:
+        member.add_roles(member.guild.get_role(int(os.environ["MEMBER_ROLE_ID"])))
+    else:
+        await member.guild.system_channel.send("<@!572432137035317249>")
+
+
+@bot.event
 async def on_member_update(before: discord.Member, after: discord.Member) -> None:
-    if str(after.id) in sub_to_main:
-        main = after.guild.get_member(sub_to_main[str(after.id)])
+    if str(after.id) in users:
+        return
+    elif str(after.id) is None:
+        main = after.guild.get_member(users[str(after.id)])
     else:
         main = after
     if str(main.id) in punishment:
@@ -86,37 +96,29 @@ async def on_guild_role_update(before: discord.Role, after: discord.Role) -> Non
 
 
 @bot.slash_command(
-    name="link-user",
+    name="verify",
     default_member_permissions=admin_only,
     guild_ids=[int(os.environ["GUILD_ID"])],
 )
-async def link_user(
-    ctx: discord.ApplicationContext, main: discord.Member, sub: discord.Member
+async def verify_user(
+    ctx: discord.ApplicationContext,
+    target: discord.Member,
+    main: Optional[discord.Member] = None,
 ) -> None:
-    if str(main.id) in sub_to_main:
-        await ctx.respond(
-            f"{main.mention} is already linked to {sub_to_main[str(main.id)]}!",
-            ephemeral=True,
-        )
-        return
-    sub_to_main[str(sub.id)] = main.id
+    users[str(target.id)] = main.id if main is not None else None
     if str(main.id) in punishment:
-        await remove_manage_roles(sub)
-    await ctx.respond(f"{main.mention} is now linked to {sub.mention}!", ephemeral=True)
+        await remove_manage_roles(target)
+    await ctx.respond(f"{target.mention} is now verified!", ephemeral=True)
 
 
 @bot.slash_command(
-    name="unlink-user",
+    name="unverify",
     default_member_permissions=admin_only,
     guild_ids=[int(os.environ["GUILD_ID"])],
 )
-async def unlink_user(
-    ctx: discord.ApplicationContext, main: discord.Member, sub: discord.Member
-) -> None:
-    del sub_to_main[str(sub.id)]
-    await ctx.respond(
-        f"{main.mention} is now unlinked from {sub.mention}!", ephemeral=True
-    )
+async def unverify(ctx: discord.ApplicationContext, target: discord.Member) -> None:
+    del users[str(target.id)]
+    await ctx.respond(f"{target.mention} is now unverified!", ephemeral=True)
 
 
 @bot.user_command(
@@ -235,8 +237,11 @@ class VotingView(View):
 
     @discord.ui.button(label="賛成", style=discord.ButtonStyle.green, emoji="👍")
     async def upvote_button(self, button: Button, interaction: discord.Interaction):
-        if str(interaction.user.id) in sub_to_main:
-            user = self.ctx.guild.get_member(sub_to_main[str(interaction.user.id)])
+        if str(interaction.user.id) not in users:
+            await interaction.response.send_message("あなたは認証されていません。", ephemeral=True)
+            return
+        if users[str(interaction.user.id)] is not None:
+            user = self.ctx.guild.get_member(users[str(interaction.user.id)])
         else:
             user = interaction.user
         self.votes["👍"].add(user)
@@ -245,8 +250,11 @@ class VotingView(View):
 
     @discord.ui.button(label="反対", style=discord.ButtonStyle.red, emoji="👎")
     async def downvote_button(self, button: Button, interaction: discord.Interaction):
-        if str(interaction.user.id) in sub_to_main:
-            user = self.ctx.guild.get_member(sub_to_main[str(interaction.user.id)])
+        if str(interaction.user.id) not in users:
+            await interaction.response.send_message("あなたは認証されていません。", ephemeral=True)
+            return
+        if users[str(interaction.user.id)] is not None:
+            user = self.ctx.guild.get_member(users[str(interaction.user.id)])
         else:
             user = interaction.user
         self.votes["👎"].add(user)
@@ -294,11 +302,26 @@ async def archive_vote(ctx: discord.ApplicationContext, channel: discord.TextCha
     await ctx.respond(embed=embed, view=view)
 
 
+@bot.slash_command(
+    name="setup",
+    default_member_permissions=admin_only,
+    guild_ids=[int(os.environ["GUILD_ID"])],
+)
+async def setup(ctx: discord.ApplicationContext) -> None:
+    member_role = ctx.guild.get_role(int(os.environ["MEMBER_ROLE_ID"]))
+    for member in ctx.guild.members:
+        if str(member.id) not in users:
+            users[str(member.id)] = None
+            await member.add_roles(member_role)
+
+
 @tasks.loop(hours=1)
 async def check() -> None:
     for member in bot.get_guild(int(os.environ["GUILD_ID"])).members:
-        if str(member.id) in sub_to_main:
-            main = member.guild.get_member(sub_to_main[str(member.id)])
+        if str(member.id) not in users:
+            continue
+        if users[str(member.id)] is not None:
+            main = member.guild.get_member(users[str(member.id)])
         else:
             main = member
         if str(main.id) in punishment:
