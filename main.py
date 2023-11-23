@@ -60,6 +60,9 @@ async def remove_manage_roles(member: discord.Member) -> None:
 async def on_ready() -> None:
     print(f"Logged in as {bot.user}")
     check.start()
+    await bot.change_presence(
+        activity=discord.Activity(type=discord.ActivityType.competing, name="がーと")
+    )
 
 
 @bot.event
