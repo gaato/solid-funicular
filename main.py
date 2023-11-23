@@ -218,13 +218,20 @@ class VotingView(View):
         self.votes: dict[str, list[discord.User]] = {"👍": set(), "👎": set()}
 
     async def on_timeout(self):
-        await self.ctx.edit(content="投票はタイムアウトしました。", view=None)
+        if len(self.votes["👍"]) > len(self.votes["👎"]):
+            await self.archive_channel()
+        else:
+            await self.ctx.edit(
+                content=f"反対 {len(self.votes['👎'])} 票のため投票が否決されました。", view=None
+            )
 
     async def handle_vote_update(self, interaction: discord.Interaction):
-        if len(self.votes["👍"]) >= 3:
+        if len(self.votes["👍"]) >= 5:
             await self.archive_channel()
         elif len(self.votes["👎"]) >= 3:
-            await self.ctx.edit(content="投票が否決されました。", view=None)
+            await self.ctx.edit(
+                content="反対 {len(self.votes['👎'])} 票のため投票が否決されました。", view=None
+            )
 
     @discord.ui.button(label="賛成", style=discord.ButtonStyle.green, emoji="👍")
     async def upvote_button(self, button: Button, interaction: discord.Interaction):
@@ -268,7 +275,9 @@ class VotingView(View):
     async def archive_channel(self):
         category = self.ctx.guild.get_channel(self.archive_category_id)
         await self.channel.edit(category=category, sync_permissions=True)
-        await self.ctx.edit(content="投票が可決されました。", view=None)
+        await self.ctx.edit(
+            content=f"賛成 {len(self.votes['👍'])} 票のため投票が可決されました。", view=None
+        )
 
 
 @bot.slash_command(
