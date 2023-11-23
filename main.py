@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import time
@@ -6,6 +7,7 @@ from typing import Any
 
 import discord
 from discord.ext import commands, tasks
+from discord.ui import Button, View
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -200,6 +202,82 @@ async def store_eshiritori(
 #     pinned_messages.reverse()
 #     for message in pinned_messages:
 #         await store_eshiritori(ctx, message)
+
+
+class VotingView(View):
+    def __init__(self, ctx: discord.ApplicationContext, timeout: float):
+        super().__init__(timeout=timeout)
+        self.ctx = ctx
+        self.channel = ctx.channel
+        self.archive_category_id = os.environ["ARCHIVE_CATEGORY_ID"]
+        self.votes: dict[str, list[discord.User]] = {"👍": set(), "👎": set()}
+
+    async def on_timeout(self):
+        await self.ctx.edit(content="投票はタイムアウトしました。", view=None)
+
+    async def handle_vote_update(self, interaction: discord.Interaction):
+        if len(self.votes["👍"]) >= 3:
+            await self.archive_channel()
+        elif len(self.votes["👎"]) >= 3:
+            await self.ctx.edit(content="投票が否決されました。", view=None)
+
+    @discord.ui.button(label="賛成", style=discord.ButtonStyle.green, emoji="👍")
+    async def upvote_button(self, button: Button, interaction: discord.Interaction):
+        if str(interaction.user.id) in sub_to_main:
+            user = self.ctx.guild.get_member(sub_to_main[str(interaction.user.id)])
+        else:
+            user = interaction.user
+        self.votes["👍"].add(user)
+        await interaction.response.edit_message(embed=self.get_vote_embed(), view=self)
+        await self.handle_vote_update(interaction)
+
+    @discord.ui.button(label="反対", style=discord.ButtonStyle.red, emoji="👎")
+    async def downvote_button(self, button: Button, interaction: discord.Interaction):
+        if str(interaction.user.id) in sub_to_main:
+            user = self.ctx.guild.get_member(sub_to_main[str(interaction.user.id)])
+        else:
+            user = interaction.user
+        self.votes["👎"].add(user)
+        await interaction.response.edit_message(embed=self.get_vote_embed(), view=self)
+        await self.handle_vote_update(interaction)
+
+    def get_vote_embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="アーカイブ投票",
+            description=f"{self.channel.name} ({self.channel.mention}) をアーカイブしますか？",
+        )
+        embed.add_field(
+            name="賛成",
+            value="\n".join(
+                f"{user.mention} ({user.name})" for user in self.votes["👍"]
+            ),
+        )
+        embed.add_field(
+            name="反対",
+            value="\n".join(
+                f"{user.mention} ({user.name})" for user in self.votes["👎"]
+            ),
+        )
+        return embed
+
+    async def archive_channel(self):
+        category = self.ctx.guild.get_channel(self.archive_category_id)
+        await self.channel.edit(category=category, sync_permissions=True)
+        await self.ctx.edit(content="投票が可決されました。", view=None)
+
+
+@bot.slash_command(
+    name="archive",
+    guild_ids=[int(os.environ["GUILD_ID"])],
+    description="チャンネルを投票でアーカイブする",
+)
+async def archive_vote(ctx: discord.ApplicationContext):
+    embed = discord.Embed(
+        title="アーカイブ投票",
+        description=f"{ctx.channel.name} ({ctx.channel.mention}) をアーカイブしますか？",
+    )
+    view = VotingView(ctx, 24 * 60 * 60)
+    await ctx.respond(embed=embed, view=view)
 
 
 @tasks.loop(hours=1)
