@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from io import BytesIO
 from typing import Any
 
 import discord
@@ -146,6 +147,52 @@ async def list_punishments(ctx: discord.ApplicationContext) -> None:
         ),
         ephemeral=True,
     )
+
+
+@bot.message_command(
+    name="絵しりとり保管",
+    guilds_ids=[int(os.environ["GUILD_ID"])],
+)
+async def store_eshiritori(
+    ctx: discord.ApplicationContext, message: discord.Message
+) -> None:
+    eshiritori_channel = bot.get_channel(int(os.environ["ESHIRITORI_CHANNEL_ID"]))
+    if eshiritori_channel is None:
+        await ctx.respond("絵しりとり保管庫が見つかりませんでした。", ephemeral=True)
+        return
+    files = []
+    for attachment in message.attachments:
+        file_bytes = BytesIO(await attachment.read())
+        file = discord.File(file_bytes, filename=attachment.filename)
+        files.append(file)
+    if len(files) == 0:
+        await ctx.respond("画像が見つかりませんでした。", ephemeral=True)
+        return
+    embed = discord.Embed(
+        description=message.content,
+        timestamp=message.created_at,
+    )
+    embed.set_author(
+        name=message.author.display_name,
+        icon_url=message.author.display_avatar.url,
+    )
+    await eshiritori_channel.send(
+        embed=embed,
+        files=files,
+    )
+    # await ctx.respond("絵しりとり保管庫に保管しました。", ephemeral=True)
+
+
+@bot.slash_command(
+    name="pin-to-eshiritori",
+    default_member_permissions=admin_only,
+    guild_ids=[int(os.environ["GUILD_ID"])],
+)
+async def pin_to_eshiritori(ctx: discord.ApplicationContext):
+    pinned_messages = await ctx.channel.pins()
+    pinned_messages.reverse()
+    for message in pinned_messages:
+        await store_eshiritori(ctx, message)
 
 
 @tasks.loop(hours=1)
