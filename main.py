@@ -279,7 +279,7 @@ class VotingView(View):
 async def archive_vote(ctx: discord.ApplicationContext, channel: discord.TextChannel):
     embed = discord.Embed(
         title="アーカイブ投票",
-        description=f"{ctx.channel.name} ({ctx.channel.mention}) をアーカイブしますか？",
+        description=f"{channel.name} ({channel.mention}) をアーカイブしますか？",
     )
     view = VotingView(ctx, channel, 24 * 60 * 60)
     await ctx.respond(embed=embed, view=view)
