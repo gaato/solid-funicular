@@ -3,7 +3,7 @@ import json
 import os
 import time
 from io import BytesIO
-from typing import Any
+from typing import Any, Optional
 
 import discord
 from discord.ext import commands, tasks
@@ -205,10 +205,15 @@ async def store_eshiritori(
 
 
 class VotingView(View):
-    def __init__(self, ctx: discord.ApplicationContext, timeout: float):
+    def __init__(
+        self,
+        ctx: discord.ApplicationContext,
+        channel: discord.TextChannel,
+        timeout: float,
+    ):
         super().__init__(timeout=timeout)
         self.ctx = ctx
-        self.channel = ctx.channel
+        self.channel = channel
         self.archive_category_id = os.environ["ARCHIVE_CATEGORY_ID"]
         self.votes: dict[str, list[discord.User]] = {"👍": set(), "👎": set()}
 
@@ -271,12 +276,12 @@ class VotingView(View):
     guild_ids=[int(os.environ["GUILD_ID"])],
     description="チャンネルを投票でアーカイブする",
 )
-async def archive_vote(ctx: discord.ApplicationContext):
+async def archive_vote(ctx: discord.ApplicationContext, channel: discord.TextChannel):
     embed = discord.Embed(
         title="アーカイブ投票",
         description=f"{ctx.channel.name} ({ctx.channel.mention}) をアーカイブしますか？",
     )
-    view = VotingView(ctx, 24 * 60 * 60)
+    view = VotingView(ctx, channel, 24 * 60 * 60)
     await ctx.respond(embed=embed, view=view)
 
 
