@@ -166,7 +166,7 @@ async def store_eshiritori(
         file = discord.File(file_bytes, filename=attachment.filename)
         files.append(file)
     if len(files) == 0:
-        # await ctx.respond("画像が見つかりませんでした。", ephemeral=True)
+        await ctx.respond("画像が見つかりませんでした。", ephemeral=True)
         return
     embed = discord.Embed(
         description=message.content,
@@ -184,19 +184,19 @@ async def store_eshiritori(
         embed=embed,
         files=files,
     )
-    # await ctx.respond("絵しりとり保管庫に保管しました。", ephemeral=True)
+    await ctx.respond("絵しりとり保管庫に保管しました。", ephemeral=True)
 
 
-@bot.slash_command(
-    name="pin-to-eshiritori",
-    default_member_permissions=admin_only,
-    guild_ids=[int(os.environ["GUILD_ID"])],
-)
-async def pin_to_eshiritori(ctx: discord.ApplicationContext):
-    pinned_messages = await ctx.channel.pins()
-    pinned_messages.reverse()
-    for message in pinned_messages:
-        await store_eshiritori(ctx, message)
+# @bot.slash_command(
+#     name="pin-to-eshiritori",
+#     default_member_permissions=admin_only,
+#     guild_ids=[int(os.environ["GUILD_ID"])],
+# )
+# async def pin_to_eshiritori(ctx: discord.ApplicationContext):
+#     pinned_messages = await ctx.channel.pins()
+#     pinned_messages.reverse()
+#     for message in pinned_messages:
+#         await store_eshiritori(ctx, message)
 
 
 @tasks.loop(hours=1)
