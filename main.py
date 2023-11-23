@@ -214,7 +214,7 @@ class VotingView(View):
         super().__init__(timeout=timeout)
         self.ctx = ctx
         self.channel = channel
-        self.archive_category_id = os.environ["ARCHIVE_CATEGORY_ID"]
+        self.archive_category_id = int(os.environ["ARCHIVE_CATEGORY_ID"])
         self.votes: dict[str, list[discord.User]] = {"👍": set(), "👎": set()}
 
     async def on_timeout(self):
