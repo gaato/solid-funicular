@@ -166,7 +166,7 @@ async def store_eshiritori(
         file = discord.File(file_bytes, filename=attachment.filename)
         files.append(file)
     if len(files) == 0:
-        await ctx.respond("画像が見つかりませんでした。", ephemeral=True)
+        # await ctx.respond("画像が見つかりませんでした。", ephemeral=True)
         return
     embed = discord.Embed(
         description=message.content,
@@ -175,6 +175,10 @@ async def store_eshiritori(
     embed.set_author(
         name=message.author.display_name,
         icon_url=message.author.display_avatar.url,
+    )
+    embed.add_field(
+        name="メッセージリンク",
+        value=message.jump_url,
     )
     await eshiritori_channel.send(
         embed=embed,
