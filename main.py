@@ -70,7 +70,7 @@ async def on_ready() -> None:
 @bot.event
 async def on_member_join(member: discord.Member) -> None:
     if str(member.id) in users:
-        member.add_roles(member.guild.get_role(int(os.environ["MEMBER_ROLE_ID"])))
+        await member.add_roles(member.guild.get_role(int(os.environ["MEMBER_ROLE_ID"])))
     else:
         await member.guild.system_channel.send("<@!572432137035317249>")
 
