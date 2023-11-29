@@ -69,25 +69,12 @@ async def on_ready() -> None:
 
 @bot.event
 async def on_member_join(member: discord.Member) -> None:
-    if str(member.id) in users:
-        await member.add_roles(member.guild.get_role(int(os.environ["MEMBER_ROLE_ID"])))
-    else:
-        await member.guild.system_channel.send("<@!572432137035317249>")
+    await check()
 
 
 @bot.event
 async def on_member_update(before: discord.Member, after: discord.Member) -> None:
-    if str(after.id) in users:
-        return
-    elif str(after.id) is None:
-        main = after.guild.get_member(users[str(after.id)])
-    else:
-        main = after
-    if str(main.id) in punishment:
-        if punishment[str(main.id)] > time.time():
-            await remove_manage_roles(after)
-        else:
-            del punishment[str(main.id)]
+    await check()
 
 
 @bot.event
@@ -315,7 +302,7 @@ async def setup(ctx: discord.ApplicationContext) -> None:
             await member.add_roles(member_role)
 
 
-@tasks.loop(hours=1)
+@tasks.loop(minutes=1)
 async def check() -> None:
     for member in bot.get_guild(int(os.environ["GUILD_ID"])).members:
         if str(member.id) not in users:
