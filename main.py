@@ -1,4 +1,3 @@
-import asyncio
 import json
 import os
 import time
@@ -211,7 +210,8 @@ class VotingView(View):
             await self.archive_channel()
         else:
             await self.ctx.edit(
-                content=f"反対 {len(self.votes['👎'])} 票のため投票が否決されました。", view=None
+                content=f"反対 {len(self.votes['👎'])} 票のため投票が否決されました。",
+                view=None,
             )
 
     async def handle_vote_update(self, interaction: discord.Interaction):
@@ -219,13 +219,16 @@ class VotingView(View):
             await self.archive_channel()
         elif len(self.votes["👎"]) >= 3:
             await self.ctx.edit(
-                content="反対 {len(self.votes['👎'])} 票のため投票が否決されました。", view=None
+                content="反対 {len(self.votes['👎'])} 票のため投票が否決されました。",
+                view=None,
             )
 
     @discord.ui.button(label="賛成", style=discord.ButtonStyle.green, emoji="👍")
     async def upvote_button(self, button: Button, interaction: discord.Interaction):
         if str(interaction.user.id) not in users:
-            await interaction.response.send_message("あなたは認証されていません。", ephemeral=True)
+            await interaction.response.send_message(
+                "あなたは認証されていません。", ephemeral=True
+            )
             return
         if users[str(interaction.user.id)] is not None:
             user = self.ctx.guild.get_member(users[str(interaction.user.id)])
@@ -238,7 +241,9 @@ class VotingView(View):
     @discord.ui.button(label="反対", style=discord.ButtonStyle.red, emoji="👎")
     async def downvote_button(self, button: Button, interaction: discord.Interaction):
         if str(interaction.user.id) not in users:
-            await interaction.response.send_message("あなたは認証されていません。", ephemeral=True)
+            await interaction.response.send_message(
+                "あなたは認証されていません。", ephemeral=True
+            )
             return
         if users[str(interaction.user.id)] is not None:
             user = self.ctx.guild.get_member(users[str(interaction.user.id)])
@@ -271,7 +276,8 @@ class VotingView(View):
         category = self.ctx.guild.get_channel(self.archive_category_id)
         await self.channel.edit(category=category, sync_permissions=True)
         await self.ctx.edit(
-            content=f"賛成 {len(self.votes['👍'])} 票のため投票が可決されました。", view=None
+            content=f"賛成 {len(self.votes['👍'])} 票のため投票が可決されました。",
+            view=None,
         )
 
 
@@ -316,6 +322,15 @@ async def check() -> None:
                 await remove_manage_roles(member)
             else:
                 del punishment[str(main.id)]
+
+
+@bot.message_command(
+    name="ピン留め",
+    guilds_ids=[int(os.environ["GUILD_ID"])],
+)
+async def pin(ctx: discord.ApplicationContext, message: discord.Message) -> None:
+    await message.pin()
+    await ctx.respond("ピン留めしました。", ephemeral=True)
 
 
 bot.run(os.environ["DISCORD_TOKEN"])
