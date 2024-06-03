@@ -333,4 +333,13 @@ async def pin(ctx: discord.ApplicationContext, message: discord.Message) -> None
     await ctx.respond("ピン留めしました。", ephemeral=True)
 
 
+@bot.message_command(
+    name="ピン留め解除",
+    guilds_ids=[int(os.environ["GUILD_ID"])],
+)
+async def unpin(ctx: discord.ApplicationContext, message: discord.Message) -> None:
+    await message.unpin()
+    await ctx.respond("ピン留め解除しました。", ephemeral=True)
+
+
 bot.run(os.environ["DISCORD_TOKEN"])
