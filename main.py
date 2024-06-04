@@ -62,7 +62,9 @@ async def on_ready() -> None:
     print(f"Logged in as {bot.user}")
     check.start()
     await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.competing, name="がーと")
+        activity=discord.Activity(
+            type=discord.ActivityType.competing, name="がーとの脳内"
+        )
     )
 
 
