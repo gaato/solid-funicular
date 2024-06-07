@@ -80,7 +80,7 @@ async def on_message(message: discord.Message) -> None:
             await message.channel.send(
                 f"{message.author.mention} うるさい", delete_after=1.0
             )
-            await message.author.dm_channel.send(message.content)
+            await message.author.send(message.content)
 
 
 @bot.event
