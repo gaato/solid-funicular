@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import time
 from io import BytesIO
 from typing import Any, Optional
@@ -12,6 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True
 
 admin_only = discord.Permissions()
 admin_only.administrator = True
@@ -66,6 +68,17 @@ async def on_ready() -> None:
             type=discord.ActivityType.competing, name="がーとの脳内"
         )
     )
+
+
+@bot.event
+async def on_message(message: discord.Message) -> None:
+    if message.author.bot:
+        return
+    pattern = re.compile(r".{100,}")
+    if pattern.search(message.content):
+        for _ in range(10):
+            m = await message.channel.send(f"{message.author.mention} うるさい")
+            await m.delete()
 
 
 @bot.event
