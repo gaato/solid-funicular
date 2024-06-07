@@ -77,8 +77,10 @@ async def on_message(message: discord.Message) -> None:
     pattern = re.compile(r".{100,}")
     if pattern.search(message.content):
         for _ in range(10):
-            m = await message.channel.send(f"{message.author.mention} うるさい")
-            await m.delete()
+            await message.channel.send(
+                f"{message.author.mention} うるさい", delete_after=1.0
+            )
+            await message.author.dm_channel.send(message.content)
 
 
 @bot.event
