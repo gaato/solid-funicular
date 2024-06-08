@@ -74,7 +74,7 @@ async def on_ready() -> None:
 async def on_message(message: discord.Message) -> None:
     if message.author.bot:
         return
-    pattern = re.compile(r".{100,}")
+    pattern = re.compile(r"(.)\1{99,}")
     if pattern.search(message.content):
         for _ in range(10):
             await message.channel.send(
