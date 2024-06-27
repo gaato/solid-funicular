@@ -220,7 +220,7 @@ class VotingView(View):
         self.ctx = ctx
         self.channel = channel
         self.archive_category_id = int(os.environ["ARCHIVE_CATEGORY_ID"])
-        self.votes: dict[str, list[discord.User]] = {"👍": set(), "👎": set()}
+        self.votes: dict[str, set[discord.User]] = {"👍": set(), "👎": set()}
 
     async def on_timeout(self):
         if len(self.votes["👍"]) > len(self.votes["👎"]):
@@ -236,7 +236,7 @@ class VotingView(View):
             await self.archive_channel()
         elif len(self.votes["👎"]) >= 3:
             await self.ctx.edit(
-                content="反対 {len(self.votes['👎'])} 票のため投票が否決されました。",
+                content=f"反対 {len(self.votes['👎'])} 票のため投票が否決されました。",
                 view=None,
             )
 
@@ -252,6 +252,7 @@ class VotingView(View):
         else:
             user = interaction.user
         self.votes["👍"].add(user)
+        self.votes["👎"].discard(user)
         await interaction.response.edit_message(embed=self.get_vote_embed(), view=self)
         await self.handle_vote_update(interaction)
 
@@ -267,6 +268,7 @@ class VotingView(View):
         else:
             user = interaction.user
         self.votes["👎"].add(user)
+        self.votes["👍"].discard(user)
         await interaction.response.edit_message(embed=self.get_vote_embed(), view=self)
         await self.handle_vote_update(interaction)
 
