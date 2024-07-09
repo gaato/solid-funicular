@@ -46,40 +46,336 @@ users = FileDict("data/users.json")
 punishment = FileDict("data/punishment.json")
 
 
-yamanote_line_stations = itertools.cycle(
+yamanote_line_announces = itertools.cycle(
     [
-        "東京",
-        "神田",
-        "秋葉原",
-        "御徒町",
-        "上野",
-        "鶯谷",
-        "日暮里",
-        "西日暮里",
-        "田端",
-        "駒込",
-        "巣鴨",
-        "大塚",
-        "池袋",
-        "目白",
-        "高田馬場",
-        "新大久保",
-        "新宿",
-        "代々木",
-        "原宿",
-        "渋谷",
-        "恵比寿",
-        "目黒",
-        "五反田",
-        "大崎",
-        "品川",
-        "高輪ゲートウェイ",
-        "田町",
-        "浜松町",
-        "新橋",
-        "有楽町",
+        """この電車は、山手線内回り、上野・池袋方面行きです。
+
+次は、神田、神田、お出口は左側です。
+
+中央線、地下鉄銀座線はお乗り換えです。
+
+This is the Yamanote Line train bound for Ueno and Ikebukuro.
+
+The next station is Kanda(JY-02).
+
+The doors on the left side will open.
+
+Please change here the Chuo Line and the Ginza Subway Line.""",
+        """次は、秋葉原、秋葉原、お出口は左側です。
+
+総武線各駅停車、地下鉄日比谷線、つくばエクスプレス線はお乗り換えです。
+
+The next station is Akihabara(JY-03).
+
+The doors on the left side will open.
+
+Please change here for the Sobu Line local service, the Hibiya Subway Line and the Tsukuba express Line.""",
+        """次は、御徒町、御徒町、お出口は左側です。
+
+都営地下鉄大江戸線はお乗り換えです
+
+The next station is Okachimachi(JY-04).
+
+The doors on the left side will open.
+
+Please change here for the Oedo Subway Line.""",
+        """次は、上野、上野、お出口は左側です。
+
+新幹線、宇都宮線、高崎線、常磐線、地下鉄銀座線、地下鉄日比谷線、京成線はお乗り換えです。
+
+The next station is Ueno(JY-05).
+
+The doors on the left side will open.
+
+Please change here for the Shinkansen, the Utsunomiya Line, the Takasaki Line, the Joban Line, the Ginza Subway Line, the Hibiya Subway Line and the Keisei Line.""",
+        """この電車は、山手線内回り、池袋・新宿方面行きです。
+
+次は、鶯谷、鶯谷、お出口は左側です。
+
+This is the Yamanote Line train bound for Ikebukuro and Shinjuku.
+
+The next station is Uguisudani(JY-06).
+
+The doors on the left side will open.""",
+        """次は、日暮里、日暮里、お出口は左側です。
+
+常磐線、京成線と日暮里・舎人ライナーはお乗り換えです。
+
+The next station is Nippori(JY-07).
+
+The doors on the left side will open.
+
+Please change here for the Joban Line, the Keisei Line and the Nippori-Toneri Liner.""",
+        """次は、西日暮里、西日暮里、お出口は左側です。
+
+地下鉄千代田線と日暮里・舎人ライナーはお乗り換えです。
+
+The next station is Nishi-Nippori(JY-08).
+
+The doors on the left side will open.
+
+Please change here for the Chiyoda Subway Line and the Nippori-Toneri Liner.""",
+        """次は、田端、田端、お出口は左側です。
+
+京浜東北線はお乗り換えです。
+
+The next station is Tabata(JY-09).
+
+The doors on the left side will open.
+
+Please change here for the Keihin-Tohoku Line.""",
+        """次は、駒込、駒込、お出口は右側です。
+
+地下鉄南北線はお乗り換えです。
+
+この電車には優先席があります。優先席を必要とされるお客様がいらっしゃいましたら席をお譲りください。
+
+The next station is Komagome(JY-10).
+
+The doors on the right side will open.
+
+Please change here for the Namboku Subway Line.
+
+There are priority seats in most cars. Please offer seat to those who may need it.""",
+        """次は、巣鴨、巣鴨、お出口は右側です。
+
+都営地下鉄三田線はお乗り換えです。
+
+The next station is Sugamo(JY-11).
+
+The doors on the right side will open.
+
+Please change here for the Mita Subway Line.""",
+        """次は、大塚、大塚、お出口は右側です。
+
+東京さくらトラム（都電荒川線）はお乗り換えです。
+
+The next station is Otsuka(JY-12).
+
+The doors on the right side will open.
+
+Please change here for the Tokyo Sakura tram.""",
+        """次は、池袋、池袋、お出口は左側です。
+
+湘南新宿ライン、埼京線、東武東上線、西武池袋線、地下鉄丸ノ内線、地下鉄有楽町線、地下鉄副都心線はお乗り換えです。
+
+The next station is Ikebukuro(JY-13).
+
+The doors on the left side will open.
+
+Please change here for the Shonan-Shinjuku Line, the Saikyo Line, the Tobu Tojo Line, the Seibu Ikebukuro Line, the Marunouchi Subway Line, the Yurakucho Subway Line and the Fukutoshin Subway Line.""",
+        """この電車は、山手線内回り、新宿・渋谷方面行きです。
+
+次は、目白、目白、お出口は左側です。
+
+This is the Yamanote Line train bound for Shinjuku and Shibuya.
+
+The next station is Mejiro(JY-14).
+
+The doors on the right side will open.""",
+        """次は、高田馬場、高田馬場、お出口は右側です。
+
+西武新宿線、地下鉄東西線はお乗り換えです。
+
+The next station is Takadanobaba(JY-15).
+
+The doors on the right side will open.
+
+Please change here the Seibu Shinjuku Line and the Tozai Subway Line.""",
+        """次は、新大久保、新大久保、お出口は右側です。
+
+お客様にお願い致します。車内では携帯電話をマナーモードに設定の上、通話はお控えください。ご協力をお願い致します。
+
+The next station is Shin-Okubo(JY-16).
+
+The doors on the right side will open.
+
+Please set you mobile phone to silent mode and refrain talking on the phone.""",
+        """次は、新宿、新宿、お出口は左側です。
+
+中央線、湘南新宿ライン、埼京線、小田急線、京王線、地下鉄丸ノ内線、都営地下鉄新宿線、都営地下鉄大江戸線はお乗り換えです。
+
+The next station is Shinjuku(JY-17).
+
+The doors on the left side will open.
+
+Please change here for the Chuo Line, the Shonan-Shinjuku Line, the Saikyo Line, the Odakyu Line, the Keio Line, the Marunouchi Subway Line, the Shinjuku Subway Line and the Oedo Subway Line.""",
+        """この電車は、山手線内回り、渋谷・品川方面行きです。
+
+次は、代々木、代々木、お出口は左側です。
+
+都営地下鉄大江戸線はお乗り換えです。
+
+This is the Yamanote Line train bound for Shibuya and Shinagawa.
+
+The next station is Yoyogi(JY-18).
+
+The doors on the left side will open.
+
+Please change here for the Oedo Subway Line.""",
+        """次は、原宿、原宿、お出口は右側です。
+
+地下鉄千代田線と地下鉄副都心線はお乗り換えです。
+
+The next station is Harajuku(JY-19).
+
+The doors on the right side will open.
+
+Please change here for the Chiyoda Subway Line and the Fukutoshin Subway Line.""",
+        """次は、渋谷、渋谷、お出口は右側です。
+
+東急東横線、東急田園都市線、京王井の頭線、地下鉄銀座線、地下鉄半蔵門線、地下鉄副都心線はお乗り換えです。
+
+電車とホームの間が空いているところがありますので、足元にご注意ください。
+
+The next station is Shibuya(JY-20).
+
+The doors on the right side will open.
+
+Please change here for the Tokyu Toyoko Line, the Tokyu Den-en-toshi Line, the Keio Inokashira Line, the Ginza Subway Line, the Hanzomon Subway Line and the fukutoshin Subway Line.
+
+Please watch your step when you leave the train.""",
+        """この電車は、山手線内回り、品川・東京方面行きです。
+
+次は、恵比寿、恵比寿、お出口は右側です。
+
+湘南新宿ラインと地下鉄日比谷線はお乗り換えです。
+
+This is the Yamanote Line train bound for Shinagawa and Tokyo.
+
+The next station is Ebisu(JY-21).
+
+The doors on the right side will open.
+
+Please change here for the Shonan-Shinjuku Line and the Hibiya Subway Line.""",
+        """次は、目黒、目黒、お出口は右側です。
+
+東急目黒線、地下鉄南北線、都営地下鉄三田線はお乗り換えです。
+
+The next station is Meguro(JY-22).
+
+The doors on the right side will open.
+
+Please change here for the Tokyu Meguro Line, the Namboku Subway Line and the Mita Subway Line.""",
+        """次は、五反田、五反田、お出口は右側です。
+
+東急池上線、都営地下鉄浅草線はお乗り換えです。
+
+The next station is Gotanda(JY-23).
+
+The doors on the right side will open.
+
+Please change here for the Tokyu Ikegami Line and the Asakusa Subway Line.""",
+        """次は、大崎、大崎、お出口は右側です。
+
+湘南新宿ライン、相鉄線直通列車と、東京臨海高速鉄道りんかい線はお乗り換えです。
+
+The next station is Osaki(JY-24).
+
+The doors on the right side will open.
+
+Please change here for the Shonan-Shinjuku Line, through service to the Sotetsu Line and the Tokyo Rinkai Kosoku Tetsudo Rinkai Line.""",
+        """次は、品川、品川、お出口は右側です。
+
+新幹線、京浜東北線（大井町・蒲田方面）、東海道線、上野東京ライン、横須賀線、京急線はお乗り換えです。
+
+この電車には優先席があります。優先席を必要とされるお客様がいらっしゃいましたら、席をお譲りください。
+
+The next station is Shinagawa(JY-25).
+
+The doors on the right side will open.
+
+Please change here for the Shinkansen, the Keihin-Tohoku Line for Oimachi and Kamata, the Tokaido Line, the Ueno-Tokyo Line, the Yokosuka Line and the Keikyu Line.
+
+There are priority seats in most cars. Please offer seat to those who may need it.""",
+        """次は、高輪ゲートウェイ、高輪ゲートウェイ、お出口は右側です。
+
+The next station is Takanawa Gateway(JY-26).
+
+The doors on the right side will open.""",
+        """次は、田町、田町、お出口は左側です。
+
+京浜東北線はお乗り換えです。
+
+The next station is Tamachi(JY-27).
+
+The doors on the left side will open.
+
+Please change here for the Kehin-Tohoku Line.""",
+        """次は、浜松町、浜松町、お出口は左側です。
+
+東京モノレール羽田空港線、都営地下鉄大江戸線はお乗り換えです。
+
+The next station is Hamamatsucho(JY-28).
+
+The doors on the left side will open.
+
+Please change here for the Tokyo Monorail Haneda airport Line and the Oedo Subway Line.""",
+        """次は、新橋、新橋、お出口は左側です。
+
+地下鉄銀座線、都営地下鉄浅草線、ゆりかもめはお乗り換えです。
+
+The next station is Shimbashi(JY-29).
+
+The doors on the left side will open.
+
+Please change here the Ginza Subway Line, the Asakusa Subway Line and the Yurikamome Line.""",
+        """次は、有楽町、有楽町、お出口は左側です。
+
+地下鉄日比谷線、地下鉄有楽町線はお乗り換えです。
+
+The station is Yurakucho(JY-30).
+
+The doors on the left side will open.
+
+Please change here for the Hibiya Subway Line and the Yurakucho Subway Line.""",
+        """次は、東京、東京、お出口は左側です。
+
+新幹線、中央線、東海道線、上野東京ライン、横須賀線、総武快速線、京葉線、地下鉄丸ノ内線はお乗り換えです。
+
+The next station is Tokyo(JY-01).
+
+The doors on the left side will open.
+
+Please change here the Shinkansen, the Chuo Line, the Tokaido Line,the Ueno-Tokyo Line, the Yokosuka Line, the Sobu Line rapid service the Keiyo Line and the Marunouchi Subway Line.""",
     ]
 )
+
+
+# yamanote_line_stations = itertools.cycle(
+#     [
+#         "東京",
+#         "神田",
+#         "秋葉原",
+#         "御徒町",
+#         "上野",
+#         "鶯谷",
+#         "日暮里",
+#         "西日暮里",
+#         "田端",
+#         "駒込",
+#         "巣鴨",
+#         "大塚",
+#         "池袋",
+#         "目白",
+#         "高田馬場",
+#         "新大久保",
+#         "新宿",
+#         "代々木",
+#         "原宿",
+#         "渋谷",
+#         "恵比寿",
+#         "目黒",
+#         "五反田",
+#         "大崎",
+#         "品川",
+#         "高輪ゲートウェイ",
+#         "田町",
+#         "浜松町",
+#         "新橋",
+#         "有楽町",
+#     ]
+# )
 
 
 async def remove_manage_roles(member: discord.Member) -> None:
@@ -386,13 +682,19 @@ async def check() -> None:
                 del punishment[str(main.id)]
 
 
-# @tasks.loop(seconds=5)
-# async def update_nick() -> None:
-#     guild = bot.get_guild(int(os.environ["GUILD_ID"]))
-#     assert guild
-#     member = guild.get_member(645555500011749387)
-#     assert member
-#     await member.edit(nick=next(yamanote_line_stations))
+@tasks.loop(minutes=2)
+async def next_station() -> None:
+    guild = bot.get_guild(1181575958730391642)
+    assert guild
+    channel = guild.get_channel(1181589569938927656)
+    assert isinstance(channel, discord.TextChannel)
+    assert bot.user
+    bot_member = guild.get_member(bot.user.id)
+    assert bot_member
+    announce = next(yamanote_line_announces)
+    if m := re.search(r"この電車は、山手線内回り、(.+?)方面行きです。", announce):
+        await bot_member.edit(nick=f"山手線内回り {m.group(1)}方面行き")
+    await channel.send(announce)
 
 
 @bot.message_command(
