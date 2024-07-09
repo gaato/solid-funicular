@@ -386,13 +386,13 @@ async def check() -> None:
                 del punishment[str(main.id)]
 
 
-@tasks.loop(seconds=5)
-async def update_nick() -> None:
-    guild = bot.get_guild(int(os.environ["GUILD_ID"]))
-    assert guild
-    member = guild.get_member(645555500011749387)
-    assert member
-    await member.edit(nick=next(yamanote_line_stations))
+# @tasks.loop(seconds=5)
+# async def update_nick() -> None:
+#     guild = bot.get_guild(int(os.environ["GUILD_ID"]))
+#     assert guild
+#     member = guild.get_member(645555500011749387)
+#     assert member
+#     await member.edit(nick=next(yamanote_line_stations))
 
 
 @bot.message_command(
