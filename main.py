@@ -1,3 +1,4 @@
+import datetime
 import itertools
 import json
 import os
@@ -684,6 +685,10 @@ async def check() -> None:
 
 @tasks.loop(minutes=2)
 async def announce_station() -> None:
+    # 0:56 から 4:25 まではアナウンスしない
+    now = datetime.datetime.now().time()
+    if datetime.time(hour=0, minute=56) <= now <= datetime.time(hour=4, minute=25):
+        return
     guild = bot.get_guild(1181575958730391642)
     assert guild
     channel = guild.get_channel(1181589569938927656)
