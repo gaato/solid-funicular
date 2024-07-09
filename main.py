@@ -397,11 +397,11 @@ async def on_ready() -> None:
     print(f"Logged in as {bot.user}")
     check.start()
     announce_station.start()
-    await bot.change_presence(
-        activity=discord.Activity(
-            type=discord.ActivityType.competing, name="がーとの脳内"
-        )
-    )
+    # await bot.change_presence(
+    #     activity=discord.Activity(
+    #         type=discord.ActivityType.competing, name="がーとの脳内"
+    #     )
+    # )
 
 
 @bot.event
