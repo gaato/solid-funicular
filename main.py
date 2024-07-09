@@ -109,7 +109,7 @@ async def verify_user(
     main: Optional[discord.Member] = None,
 ) -> None:
     users[str(target.id)] = main.id if main is not None else None
-    if str(main.id) in punishment:
+    if main is not None and str(main.id) in punishment:
         await remove_manage_roles(target)
     await ctx.respond(f"{target.mention} is now verified!", ephemeral=True)
 
@@ -150,13 +150,12 @@ async def forgive(ctx: discord.ApplicationContext, member: discord.Member) -> No
     guild_ids=[int(os.environ["GUILD_ID"])],
 )
 async def list_punishments(ctx: discord.ApplicationContext) -> None:
-    await ctx.respond(
-        "\n".join(
-            f"{bot.get_user(int(k)).mention} is punished until <t:{int(v)}:F>"
-            for k, v in punishment.items()
-        ),
-        ephemeral=True,
-    )
+    for k, v in punishment.items():
+        user = bot.get_user(int(k))
+        assert user
+        await ctx.respond(
+            f"{user.mention} is punished until <t:{int(v)}:F>", ephemeral=True
+        )
 
 
 @bot.message_command(
@@ -167,6 +166,7 @@ async def store_eshiritori(
     ctx: discord.ApplicationContext, message: discord.Message
 ) -> None:
     eshiritori_channel = bot.get_channel(int(os.environ["ESHIRITORI_CHANNEL_ID"]))
+    assert isinstance(eshiritori_channel, discord.TextChannel)
     if eshiritori_channel is None:
         await ctx.respond("絵しりとり保管庫が見つかりませんでした。", ephemeral=True)
         return
@@ -242,6 +242,7 @@ class VotingView(View):
 
     @discord.ui.button(label="賛成", style=discord.ButtonStyle.green, emoji="👍")
     async def upvote_button(self, button: Button, interaction: discord.Interaction):
+        assert isinstance(interaction.user, discord.Member)
         if str(interaction.user.id) not in users:
             await interaction.response.send_message(
                 "あなたは認証されていません。", ephemeral=True
@@ -258,6 +259,7 @@ class VotingView(View):
 
     @discord.ui.button(label="反対", style=discord.ButtonStyle.red, emoji="👎")
     async def downvote_button(self, button: Button, interaction: discord.Interaction):
+        assert isinstance(interaction.user, discord.Member)
         if str(interaction.user.id) not in users:
             await interaction.response.send_message(
                 "あなたは認証されていません。", ephemeral=True
@@ -329,13 +331,16 @@ async def setup(ctx: discord.ApplicationContext) -> None:
 
 @tasks.loop(minutes=1)
 async def check() -> None:
-    for member in bot.get_guild(int(os.environ["GUILD_ID"])).members:
+    guild = bot.get_guild(int(os.environ["GUILD_ID"]))
+    assert guild
+    for member in guild.members:
         if str(member.id) not in users:
             continue
         if users[str(member.id)] is not None:
             main = member.guild.get_member(users[str(member.id)])
         else:
             main = member
+        assert main
         if str(main.id) in punishment:
             if punishment[str(main.id)] > time.time():
                 await remove_manage_roles(member)
