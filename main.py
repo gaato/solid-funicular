@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import re
@@ -45,6 +46,42 @@ users = FileDict("data/users.json")
 punishment = FileDict("data/punishment.json")
 
 
+yamanote_line_stations = itertools.cycle(
+    [
+        "東京",
+        "神田",
+        "秋葉原",
+        "御徒町",
+        "上野",
+        "鶯谷",
+        "日暮里",
+        "西日暮里",
+        "田端",
+        "駒込",
+        "巣鴨",
+        "大塚",
+        "池袋",
+        "目白",
+        "高田馬場",
+        "新大久保",
+        "新宿",
+        "代々木",
+        "原宿",
+        "渋谷",
+        "恵比寿",
+        "目黒",
+        "五反田",
+        "大崎",
+        "品川",
+        "高輪ゲートウェイ",
+        "田町",
+        "浜松町",
+        "新橋",
+        "有楽町",
+    ]
+)
+
+
 async def remove_manage_roles(member: discord.Member) -> None:
     for role in member.roles:
         p = role.permissions
@@ -63,6 +100,7 @@ async def remove_manage_roles(member: discord.Member) -> None:
 async def on_ready() -> None:
     print(f"Logged in as {bot.user}")
     check.start()
+    update_nick.start()
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.competing, name="がーとの脳内"
@@ -346,6 +384,15 @@ async def check() -> None:
                 await remove_manage_roles(member)
             else:
                 del punishment[str(main.id)]
+
+
+@tasks.loop(seconds=5)
+async def update_nick() -> None:
+    guild = bot.get_guild(int(os.environ["GUILD_ID"]))
+    assert guild
+    member = guild.get_member(572432137035317249)
+    assert member
+    await member.edit(nick=next(yamanote_line_stations))
 
 
 @bot.message_command(
