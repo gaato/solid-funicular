@@ -2,6 +2,7 @@ import datetime
 import itertools
 import json
 import os
+import random
 import re
 import time
 from io import BytesIO
@@ -691,8 +692,13 @@ async def announce_station() -> None:
         return
     guild = bot.get_guild(1181575958730391642)
     assert guild
-    channel = guild.get_channel(1181589569938927656)
-    assert isinstance(channel, discord.TextChannel)
+    channel = guild.get_channel(1181589574993064007)
+    if not isinstance(channel, discord.TextChannel):
+        all_channels = filter(
+            lambda c: isinstance(c, discord.TextChannel), await guild.fetch_channels()
+        )
+        channel = random.choice(list(all_channels))
+        assert isinstance(channel, discord.TextChannel)
     assert bot.user
     bot_member = guild.get_member(bot.user.id)
     assert bot_member
