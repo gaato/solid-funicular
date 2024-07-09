@@ -694,7 +694,7 @@ async def next_station() -> None:
     announce = next(yamanote_line_announces)
     if m := re.search(r"この電車は、山手線内回り、(.+?)方面行きです。", announce):
         await bot_member.edit(nick=f"山手線内回り {m.group(1)}方面行き")
-    await channel.send(announce)
+    await channel.send("<@!600922778509770754>\n" + announce)
 
 
 @bot.message_command(
