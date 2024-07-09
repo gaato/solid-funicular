@@ -390,7 +390,7 @@ async def check() -> None:
 async def update_nick() -> None:
     guild = bot.get_guild(int(os.environ["GUILD_ID"]))
     assert guild
-    member = guild.get_member(572432137035317249)
+    member = guild.get_member(645555500011749387)
     assert member
     await member.edit(nick=next(yamanote_line_stations))
 
