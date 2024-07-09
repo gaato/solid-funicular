@@ -396,7 +396,7 @@ async def remove_manage_roles(member: discord.Member) -> None:
 async def on_ready() -> None:
     print(f"Logged in as {bot.user}")
     check.start()
-    update_nick.start()
+    announce_station.start()
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.competing, name="がーとの脳内"
@@ -683,7 +683,7 @@ async def check() -> None:
 
 
 @tasks.loop(minutes=2)
-async def next_station() -> None:
+async def announce_station() -> None:
     guild = bot.get_guild(1181575958730391642)
     assert guild
     channel = guild.get_channel(1181589569938927656)
