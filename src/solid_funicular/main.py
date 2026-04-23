@@ -13,7 +13,9 @@ from discord.ext import commands, tasks
 from discord.ui import Button, View
 from dotenv import load_dotenv
 
-load_dotenv()
+# Only load .env if not running under systemd (for development)
+if not os.environ.get('DISCORD_TOKEN'):
+    load_dotenv()
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
@@ -726,4 +728,10 @@ async def unpin(ctx: discord.ApplicationContext, message: discord.Message) -> No
     await ctx.respond("ピン留め解除しました。", ephemeral=True)
 
 
-bot.run(os.environ["DISCORD_TOKEN"])
+def main():
+    """Main entry point for the bot."""
+    bot.run(os.environ["DISCORD_TOKEN"])
+
+
+if __name__ == "__main__":
+    main()

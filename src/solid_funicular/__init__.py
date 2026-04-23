@@ -1,0 +1,1 @@
+"""Solid Funicular Discord Bot"""

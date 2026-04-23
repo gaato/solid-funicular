@@ -1,0 +1,23 @@
+services:
+  discord-bot:
+    build: .
+    container_name: solid-funicular-bot
+    restart: unless-stopped
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - GUILD_ID=${GUILD_ID}
+      - MEMBER_ROLE_ID=${MEMBER_ROLE_ID}
+      - ESHIRITORI_CHANNEL_ID=${ESHIRITORI_CHANNEL_ID}
+      - ARCHIVE_CATEGORY_ID=${ARCHIVE_CATEGORY_ID}
+    volumes:
+      - ./data:/app/data
+    depends_on: []
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
+
+volumes:
+  bot-data:
