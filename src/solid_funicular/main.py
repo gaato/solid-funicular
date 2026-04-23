@@ -693,7 +693,8 @@ async def announce_station() -> None:
     if datetime.time(hour=0, minute=56) <= now <= datetime.time(hour=4, minute=25):
         return
     guild = bot.get_guild(1181575958730391642)
-    assert guild
+    if guild is None:
+        return
     channel = guild.get_channel(1181589574993064007)
     if not isinstance(channel, discord.TextChannel):
         all_channels = filter(
