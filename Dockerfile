@@ -1,26 +1,18 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
-# Set working directory
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/src
+
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir py-cord python-dotenv
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+COPY src ./src
+COPY data/.gitignore ./data/.gitignore
+RUN mkdir -p /app/data \
+    && printf '{}' > /app/data/users.json \
+    && printf '{}' > /app/data/punishment.json
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
-
-# Create data directory for persistent storage
-RUN mkdir -p data
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-
-# Run the application
-CMD ["python", "main.py"]
+CMD ["python", "-m", "solid_funicular.main"]
