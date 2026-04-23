@@ -700,11 +700,17 @@ async def announce_station() -> None:
         all_channels = filter(
             lambda c: isinstance(c, discord.TextChannel), await guild.fetch_channels()
         )
-        channel = random.choice(list(all_channels))
-        assert isinstance(channel, discord.TextChannel)
-    assert bot.user
+        channels = list(all_channels)
+        if not channels:
+            return
+        channel = random.choice(channels)
+        if not isinstance(channel, discord.TextChannel):
+            return
+    if bot.user is None:
+        return
     bot_member = guild.get_member(bot.user.id)
-    assert bot_member
+    if bot_member is None:
+        return
     announce = next(yamanote_line_announces)
     if m := re.search(r"この電車は、山手線内回り、(.+?)方面行きです。", announce):
         await bot_member.edit(nick=f"山手線内回り {m.group(1)}方面行き")
