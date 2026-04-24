@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir py-cord python-dotenv
+RUN pip install --no-cache-dir --no-compile oci py-cord python-dotenv
 
 COPY src ./src
 COPY data/.gitignore ./data/.gitignore

@@ -1,6 +1,5 @@
 import datetime
 import itertools
-import json
 import os
 import random
 import re
@@ -12,6 +11,7 @@ import discord
 from discord.ext import commands, tasks
 from discord.ui import Button, View
 from dotenv import load_dotenv
+from solid_funicular.state import JsonState
 
 # Only load .env if not running under systemd (for development)
 if not os.environ.get('DISCORD_TOKEN'):
@@ -27,27 +27,21 @@ bot = commands.Bot(intents=intents)
 
 
 class FileDict(dict):
-    def __init__(self, path: str) -> None:
-        self.path = path
-        if not os.path.exists(path):
-            with open(path, "w") as f:
-                json.dump({}, f)
-        with open(path, "r") as f:
-            self.update(json.load(f))
+    def __init__(self, path: str, object_name: str) -> None:
+        self.store = JsonState(path, object_name)
+        self.update(self.store.load())
 
     def __setitem__(self, key: str, value: Any) -> None:
         super().__setitem__(key, value)
-        with open(self.path, "w") as f:
-            json.dump(self, f)
+        self.store.save(self)
 
     def __delitem__(self, key: str) -> None:
         super().__delitem__(key)
-        with open(self.path, "w") as f:
-            json.dump(self, f)
+        self.store.save(self)
 
 
-users = FileDict("data/users.json")
-punishment = FileDict("data/punishment.json")
+users = FileDict("data/users.json", "users.json")
+punishment = FileDict("data/punishment.json", "punishment.json")
 
 
 yamanote_line_announces = itertools.cycle(

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Discord bot for managing server functions"
 requires-python = ">=3.12"
 dependencies = [
+    "oci>=2.172.0",
     "py-cord>=2.5,<3.0.0",
     "python-dotenv>=1.1.1",
 ]
