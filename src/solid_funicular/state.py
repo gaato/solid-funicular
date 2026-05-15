@@ -29,6 +29,21 @@ class JsonState:
         return self._client
 
     def _oci_config(self) -> dict[str, str]:
+        key_file = os.environ.get("OCI_PRIVATE_KEY_FILE")
+        if key_file:
+            return {
+                "user": os.environ["OCI_USER_OCID"],
+                "fingerprint": os.environ["OCI_FINGERPRINT"],
+                "tenancy": os.environ["OCI_TENANCY_OCID"],
+                "region": os.environ["OCI_REGION"],
+                "key_file": key_file,
+                **(
+                    {"pass_phrase": os.environ["OCI_PRIVATE_KEY_PASSPHRASE"]}
+                    if os.environ.get("OCI_PRIVATE_KEY_PASSPHRASE")
+                    else {}
+                ),
+            }
+
         key_content = os.environ.get("OCI_PRIVATE_KEY")
         if key_content:
             return {
