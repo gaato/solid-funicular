@@ -49,8 +49,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: gaato
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Extract image metadata
         id: meta
