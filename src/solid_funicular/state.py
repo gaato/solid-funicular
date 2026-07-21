@@ -2,8 +2,9 @@ import json
 import os
 from typing import Any
 
-import oci
-from oci.exceptions import ServiceError
+import boto3
+from botocore.config import Config
+from botocore.exceptions import ClientError
 
 
 class JsonState:
@@ -11,10 +12,31 @@ class JsonState:
         self.local_path = local_path
         self.object_name = object_name
         self.backend = os.environ.get("BOT_STATE_BACKEND", "local")
-        self.bucket = os.environ.get("BOT_STATE_BUCKET")
-        self.namespace = os.environ.get("BOT_STATE_NAMESPACE")
+        if self.backend not in {"local", "s3"}:
+            raise RuntimeError('BOT_STATE_BACKEND must be either "local" or "s3"')
+        self.endpoint = os.environ.get("S3_ENDPOINT")
+        self.region = os.environ.get("S3_REGION")
+        self.bucket = os.environ.get("S3_BUCKET")
+        self.access_key_id = os.environ.get("S3_ACCESS_KEY_ID")
+        self.secret_access_key = os.environ.get("S3_SECRET_ACCESS_KEY")
         self.prefix = os.environ.get("BOT_STATE_PREFIX", "").strip("/")
         self._client = None
+        if self.backend == "s3":
+            missing = [
+                name
+                for name, value in {
+                    "S3_ENDPOINT": self.endpoint,
+                    "S3_REGION": self.region,
+                    "S3_BUCKET": self.bucket,
+                    "S3_ACCESS_KEY_ID": self.access_key_id,
+                    "S3_SECRET_ACCESS_KEY": self.secret_access_key,
+                }.items()
+                if not value
+            ]
+            if missing:
+                raise RuntimeError(
+                    f'{", ".join(missing)} must be set when BOT_STATE_BACKEND=s3'
+                )
 
     @property
     def key(self) -> str:
@@ -25,57 +47,39 @@ class JsonState:
     @property
     def client(self):
         if self._client is None:
-            self._client = oci.object_storage.ObjectStorageClient(self._oci_config())
+            self._client = boto3.client(
+                "s3",
+                endpoint_url=self.endpoint,
+                region_name=self.region,
+                aws_access_key_id=self.access_key_id,
+                aws_secret_access_key=self.secret_access_key,
+                config=Config(s3={"addressing_style": "path"}),
+            )
         return self._client
 
-    def _oci_config(self) -> dict[str, str]:
-        key_content = os.environ.get("OCI_PRIVATE_KEY")
-        if key_content:
-            return {
-                "user": os.environ["OCI_USER_OCID"],
-                "fingerprint": os.environ["OCI_FINGERPRINT"],
-                "tenancy": os.environ["OCI_TENANCY_OCID"],
-                "region": os.environ["OCI_REGION"],
-                "key_content": key_content,
-                **(
-                    {"pass_phrase": os.environ["OCI_PRIVATE_KEY_PASSPHRASE"]}
-                    if os.environ.get("OCI_PRIVATE_KEY_PASSPHRASE")
-                    else {}
-                ),
-            }
-        return oci.config.from_file()
-
     def load(self) -> dict[str, Any]:
-        if self.backend != "oci":
+        if self.backend != "s3":
             return self._load_local()
-        if not self.bucket or not self.namespace:
-            raise RuntimeError(
-                "BOT_STATE_BUCKET and BOT_STATE_NAMESPACE are required when BOT_STATE_BACKEND=oci"
-            )
         try:
-            response = self.client.get_object(self.namespace, self.bucket, self.key)
-        except ServiceError as error:
-            if error.status != 404:
+            response = self.client.get_object(Bucket=self.bucket, Key=self.key)
+        except ClientError as error:
+            code = error.response.get("Error", {}).get("Code")
+            if code not in {"404", "NoSuchKey"}:
                 raise
             data: dict[str, Any] = {}
             self.save(data)
             return data
-        return json.loads(response.data.content.decode("utf-8"))
+        return json.loads(response["Body"].read().decode("utf-8"))
 
     def save(self, data: dict[str, Any]) -> None:
-        if self.backend != "oci":
+        if self.backend != "s3":
             self._save_local(data)
             return
-        if not self.bucket or not self.namespace:
-            raise RuntimeError(
-                "BOT_STATE_BUCKET and BOT_STATE_NAMESPACE are required when BOT_STATE_BACKEND=oci"
-            )
         self.client.put_object(
-            self.namespace,
-            self.bucket,
-            self.key,
-            json.dumps(data).encode("utf-8"),
-            content_type="application/json",
+            Bucket=self.bucket,
+            Key=self.key,
+            Body=json.dumps(data).encode("utf-8"),
+            ContentType="application/json",
         )
 
     def _load_local(self) -> dict[str, Any]:
